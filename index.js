@@ -1,135 +1,92 @@
+require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 
 const app = express();
 app.use(express.json());
 
-// ===============================
-// CONFIGURAÇÕES
-// ===============================
-const PORT = process.env.PORT || 3000;
-const ZAPI_INSTANCE_ID = process.env.ZAPI_INSTANCE_ID;
-const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
-const SITE_URL = "https://tc-sports-2.myshopify.com";
+const PORT = process.env.PORT || 10000;
+const ZAPI_URL = "https://api.z-api.io/instances";
+const INSTANCE_ID = process.env.ZAPI_INSTANCE_ID;
+const TOKEN = process.env.ZAPI_TOKEN;
+const SITE = process.env.SITE_URL;
 
-// ===============================
-// FUNÇÃO ENVIAR MENSAGEM
-// ===============================
-async function enviarMensagem(numero, mensagem) {
+// webhook
+app.post("/webhook", async (req, res) => {
+  const data = req.body;
+
+  if (!data.message || !data.phone) {
+    return res.sendStatus(200);
+  }
+
+  const msg = data.message.text?.toLowerCase() || "";
+  const phone = data.phone;
+
+  let reply = "";
+
+  // BOAS-VINDAS
+  if (msg.includes("oi") || msg.includes("olá")) {
+    reply =
+      "👋 Fala! Seja bem-vindo à *TC Sports* ⚽🔥\n\n" +
+      "Trabalhamos com:\n" +
+      "🇧🇷 Times do Brasil\n" +
+      "🌍 Times da Europa\n" +
+      "🏆 Seleções\n\n" +
+      "👉 Masculina e feminina\n👉 Tamanhos do P ao 2GG\n\n" +
+      "Me diga:\n1️⃣ Time\n2️⃣ Tamanho\n3️⃣ Masculina ou feminina";
+  }
+
+  // TAMANHOS
+  else if (msg.includes("tamanho")) {
+    reply =
+      "📏 Temos todos os tamanhos:\n" +
+      "P • M • G • GG • 2GG\n\n" +
+      "Qual time você procura?";
+  }
+
+  // PREÇO
+  else if (msg.includes("preço") || msg.includes("valor")) {
+    reply =
+      "💰 Trabalhamos com excelente custo-benefício!\n" +
+      "Qualidade top + entrega rápida 🚀\n\n" +
+      "Me diga o time que eu já te envio o link certinho 👇";
+  }
+
+  // DÚVIDA / LINK SITE
+  else if (msg.includes("ver") || msg.includes("site") || msg.includes("modelo")) {
+    reply =
+      "Perfeito 👌\n" +
+      "Você pode ver todos os modelos aqui:\n\n" +
+      `🛒 ${SITE}\n\n` +
+      "Se quiser, me diga o time que eu já te mando direto na camisa 😉";
+  }
+
+  // PADRÃO
+  else {
+    reply =
+      "⚽ Me conta rapidinho:\n" +
+      "👉 Qual time você quer?\n" +
+      "👉 Tamanho (P ao 2GG)\n" +
+      "👉 Masculina ou feminina\n\n" +
+      "Eu te ajudo agora 💪";
+  }
+
   await axios.post(
-    `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/send-text`,
+    `${ZAPI_URL}/${INSTANCE_ID}/token/${TOKEN}/send-text`,
     {
-      phone: numero,
-      message: mensagem,
+      phone,
+      message: reply
     }
   );
-}
 
-// ===============================
-// WEBHOOK
-// ===============================
-app.post("/webhook", async (req, res) => {
-  try {
-    const texto = req.body.message?.text;
-    const numero = req.body.phone;
-
-    if (!texto || !numero) {
-      return res.sendStatus(200);
-    }
-
-    const mensagem = texto.toLowerCase();
-
-    // ===============================
-    // SAUDAÇÃO
-    // ===============================
-    if (
-      mensagem === "oi" ||
-      mensagem === "ola" ||
-      mensagem === "olá" ||
-      mensagem.includes("bom dia") ||
-      mensagem.includes("boa tarde") ||
-      mensagem.includes("boa noite")
-    ) {
-      await enviarMensagem(
-        numero,
-        `Falaaa 👋😄  
-Seja bem-vindo à *TC Sports* ⚽🔥  
-
-Trabalhamos com:
-🇧🇷 *Times do Brasil*  
-🌍 *Times da Europa*  
-🏆 *Todas as seleções*  
-
-Me diga:
-👉 Qual *time* ou *seleção* você procura?`
-      );
-      return res.sendStatus(200);
-    }
-
-    // ===============================
-    // TAMANHO + GÊNERO
-    // ===============================
-    if (
-      mensagem.includes("masculina") ||
-      mensagem.includes("feminina") ||
-      mensagem.includes("p") ||
-      mensagem.includes("m") ||
-      mensagem.includes("g") ||
-      mensagem.includes("gg") ||
-      mensagem.includes("xg") ||
-      mensagem.includes("2gg")
-    ) {
-      await enviarMensagem(
-        numero,
-        `Perfeito 👌  
-
-Temos esse modelo disponível sim ✅  
-👕 Masculina e Feminina  
-📏 Tamanhos do *P ao 2GG*  
-
-👉 Para ver os modelos e finalizar com segurança, acesse:
-${SITE_URL}
-
-Se quiser, me diga novamente:
-• Time ou seleção  
-• Masculina ou Feminina  
-• Tamanho 😉`
-      );
-      return res.sendStatus(200);
-    }
-
-    // ===============================
-    // QUALQUER TIME OU SELEÇÃO
-    // ===============================
-    await enviarMensagem(
-      numero,
-      `Boa escolha 😎🔥  
-
-Trabalhamos com *camisas nacionais, europeias e seleções*, qualidade top e envio rápido 🚚  
-
-📏 Tamanhos disponíveis: *P ao 2GG*  
-👕 Masculina e Feminina  
-
-Me diga agora:
-👉 Masculina ou Feminina?
-👉 Qual tamanho?`
-    );
-
-    res.sendStatus(200);
-  } catch (erro) {
-    console.error("Erro no webhook:", erro.message);
-    res.sendStatus(200);
-  }
+  res.sendStatus(200);
 });
 
-// ===============================
-// ROTA TESTE
-// ===============================
+// rota teste
 app.get("/", (req, res) => {
-  res.send("Servidor online 🚀");
+  res.send("Bot TC Sports online 🚀");
 });
 
-// ===============================
 app.listen(PORT, () => {
-  console.log("🤖 Bot TC Sports rodando na porta", PORT);
+  console.log(`🤖 Bot TC Sports rodando na porta ${PORT}`);
 });
