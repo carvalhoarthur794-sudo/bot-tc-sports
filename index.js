@@ -3,17 +3,15 @@ const app = express();
 
 app.use(express.json());
 
-// Webhook do WhatsApp
-app.post("/webhook", (req, res) => {
-  console.log("📩 Mensagem recebida:");
-  console.log(req.body);
-
-  res.sendStatus(200);
-});
-
-// Rota raiz (teste no navegador)
+// rota de teste (ESSENCIAL)
 app.get("/", (req, res) => {
   res.send("Servidor online 🚀");
+});
+
+// webhook do WhatsApp
+app.post("/webhook", (req, res) => {
+  console.log("Mensagem recebida:", req.body);
+  res.sendStatus(200);
 });
 
 const PORT = process.env.PORT || 3000;
