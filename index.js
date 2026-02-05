@@ -5,8 +5,8 @@ const app = express();
 app.use(express.json());
 
 // 🔴 CONFIGURAÇÃO CORRETA
-const INSTANCE_ID = "SEU_ID_DA_INSTANCIA"; // exatamente igual ao painel
-const TOKEN = "SEU_TOKEN_DA_ZAPI";
+const INSTANCE_ID =3EE4729C029402FF84C4EAA28CA4D533 ; // exatamente igual ao painel
+const TOKEN =504EDF003887E11088F11E2D ;
 
 app.post("/webhook", async (req, res) => {
   try {
