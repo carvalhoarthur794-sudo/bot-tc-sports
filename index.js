@@ -1,66 +1,39 @@
-const express = require("express");
-const bodyParser = require("body-parser");
 const axios = require("axios");
+const express = require("express");
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
-const PORT = process.env.PORT || 10000;
+// 🔴 CONFIGURAÇÃO CORRETA
+const INSTANCE_ID = "SEU_ID_DA_INSTANCIA"; // exatamente igual ao painel
+const TOKEN = "SEU_TOKEN_DA_ZAPI";
 
-// 🔑 DADOS DO Z-API (Render > Environment)
-const ZAPI_INSTANCE = process.env.ZAPI_INSTANCE;
-const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
-
-// 🔁 ROTA PRINCIPAL (TESTE NO NAVEGADOR)
-app.get("/", (req, res) => {
-  res.send("🤖 Bot TC Sports ONLINE");
-});
-
-// 🔥 WEBHOOK DO WHATSAPP
 app.post("/webhook", async (req, res) => {
-  const data = req.body;
-
   try {
-    const telefone = data.phone;
-    const mensagem = data.text?.message?.toLowerCase();
+    const msg = req.body?.text?.message;
+    const phone = req.body?.phone;
 
-    if (!mensagem) {
-      return res.sendStatus(200);
-    }
-
-    let resposta = "⚽ Olá! Seja bem-vindo à TC Sports.\n\n";
-    resposta += "Digite:\n";
-    resposta += "1️⃣ Camisas de Time\n";
-    resposta += "2️⃣ Seleções\n";
-    resposta += "3️⃣ Tamanhos disponíveis\n";
-
-    if (mensagem === "1") {
-      resposta = "🔥 Temos todos os times do Brasil e Europa!\nQual time você procura?";
-    }
-
-    if (mensagem === "2") {
-      resposta = "🌍 Temos todas as seleções!\nQual seleção você quer?";
-    }
-
-    if (mensagem === "3") {
-      resposta = "📏 Trabalhamos do P ao 2GG\nMasculino e Feminino.";
-    }
+    if (!msg || !phone) return res.sendStatus(200);
 
     await axios.post(
-      `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/send-text`,
+      `https://api.z-api.io/instances/${INSTANCE_ID}/token/${TOKEN}/send-text`,
       {
-        phone: telefone,
-        message: resposta
+        phone: phone,
+        message: "Oi! 👋 Seja bem-vindo à TC Sports ⚽👕"
       }
     );
 
     res.sendStatus(200);
   } catch (err) {
-    console.error("Erro ao responder:", err.message);
-    res.sendStatus(200);
+    console.error("ERRO:", err.response?.data || err.message);
+    res.sendStatus(500);
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🤖 Bot rodando na porta ${PORT}`);
+app.get("/", (req, res) => {
+  res.send("BOT ONLINE 🚀");
+});
+
+app.listen(3000, () => {
+  console.log("Servidor rodando na porta 3000");
 });
