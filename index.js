@@ -16,7 +16,7 @@ app.post("/webhook", async (req, res) => {
     if (!msg || !phone) return res.sendStatus(200);
 
     await axios.post(
-      `https://api.z-api.io/instances/${INSTANCE_ID}/token/${TOKEN}/send-text`,
+      `https://api.z-api.io/instances/${3EE4729C029402FF84C4EAA28CA4D533}/token/${504EDF003887E11088F11E2D}/send-text`,
       {
         phone: phone,
         message: "Oi! 👋 Seja bem-vindo à TC Sports ⚽👕"
