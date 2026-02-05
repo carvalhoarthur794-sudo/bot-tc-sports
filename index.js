@@ -20,7 +20,7 @@ app.post("/webhook", async (req, res) => {
     }
 
     await axios.post(
-      `https://api.z-api.io/instances/${3EE4729C029402FF84C4EAA28CA4D533}/token/${504EDF003887E11088F11E2D}/sendText`,
+      `https://api.z-api.io/instances/${INSTANCE_ID}/token/${TOKEN}/sendText`,
       {
         phone: phone,
         message:
